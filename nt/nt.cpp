@@ -20,7 +20,7 @@
 
 handles buffer size races correctly (STATUS_INFO_LENGTH_MISMATCH loop).
 
-checks for nulls and edge cases so it won’t crash as easily.
+checks for nulls and edge cases so it wonâ€™t crash as easily.
 
 processes the final list entry so results are complete.
 
@@ -199,3 +199,31 @@ std::uint8_t* nt::find_module(std::wstring_view module_name)
 
     return image_base;
 }
+
+PPEB GetPEB() {
+#ifdef _WIN64
+    return (PPEB)__readgsqword(0x60);
+#else
+    return (PPEB)__readfsdword(0x30);
+#endif
+}
+
+void* GetModuleBaseAddress(const char* moduleName) {
+    PPEB peb = GetPEB();
+    PPEB_LDR_DATA ldr = peb->Ldr;
+    PLIST_ENTRY list = &ldr->InMemoryOrderModuleList;
+    
+    for (PLIST_ENTRY entry = list->Flink; entry != list; entry = entry->Flink) {
+        PLDR_DATA_TABLE_ENTRY module = CONTAINING_RECORD(entry, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+        
+        if (module->BaseDllName.Buffer) {
+            if (_wcsicmp(module->BaseDllName.Buffer, std::wstring(moduleName, moduleName + strlen(moduleName)).c_str()) == 0) {
+                return module->DllBase;
+            }
+        }
+    }
+    
+    return nullptr;
+}
+
+
