@@ -1,14 +1,12 @@
 #include "nt.hpp"
 #include "nt_def.hpp"
 
-// nt.cpp
-
 #define WIN32_NO_STATUS
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 
-#include <winternl.h>   // NtQuerySystemInformation, structs
-#include <ntstatus.h>   // STATUS_INFO_LENGTH_MISMATCH, etc.
+#include <winternl.h>   
+#include <ntstatus.h>   
 
 
 #include <vector>
@@ -225,5 +223,6 @@ void* GetModuleBaseAddress(const char* moduleName) {
     
     return nullptr;
 }
+
 
 
